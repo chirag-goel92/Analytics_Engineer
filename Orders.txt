@@ -1,0 +1,43 @@
+USE SCHEMA "EXT_ANALYTICS_ENGINEER_CGOEL". "MYSCHEMA";
+CREATE OR REPLACE TABLE orders
+                        (
+                                                orderid string,
+                                                securityid string,
+                                                ordertype string,
+                                                quantity           INTEGER,
+                                                cumulativequantity INTEGER,
+                                                userid string,
+                                                ordertimestamp timestamp,
+                                                orderstate string,
+                                                current_state_flag string
+                        )
+                        AS
+SELECT DISTINCT a.orderid,
+                b.securityid,
+                b.ordertype,
+                a.quantity,
+                a.cumulativequantity,
+                a.userid,
+                a.timestamp,
+                a.type,
+                a.current_state_flag
+FROM            (
+                (
+                                SELECT DISTINCT payload['event']['orderId']                                                        AS orderid,
+                                                payload['event']['securityId']                                                     AS securityid,
+                                                payload['event']['orderType']                                                      AS ordertype,
+                                                payload['event']['quantity']                                                       AS quantity,
+                                                payload['event']['cumulativeQuantity']                                             AS cumulativequantity,
+                                                payload['event']['userId']::string                                                 AS userid,
+                                                to_timestamp(payload['timestamp']::string)                                         AS timestamp,
+                                                payload['type']                                                                    AS type,
+                                                dense_rank() over(partition BY orderid, userid ORDER BY payload['timestamp'] DESC) AS current_state_flag
+                                FROM            "EXT_ANALYTICS_ENGINEER_RAW". "INGESTED". "BROKER_ORDERS_DOMAINEVENTS" ) a
+LEFT JOIN
+                (
+                                SELECT DISTINCT payload['event']['securityId'] AS securityid,
+                                                payload['event']['orderId']    AS orderid,
+                                                payload['event']['orderType']  AS ordertype
+                                FROM            "EXT_ANALYTICS_ENGINEER_RAW". "INGESTED". "BROKER_ORDERS_DOMAINEVENTS"
+                                WHERE           securityid IS NOT NULL ) b
+ON              a.orderid = b.orderid )

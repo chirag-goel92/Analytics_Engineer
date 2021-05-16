@@ -1,0 +1,23 @@
+USE SCHEMA "EXT_ANALYTICS_ENGINEER_CGOEL". "MYSCHEMA";CREATE OR REPLACE TABLE master
+                        (
+                                                category string,
+                                                securitystatus string,
+                                                currency string,
+                                                isin string,
+                                                entitytype string,
+                                                transactionid string,
+                                                type string,
+                                                rnk string
+                        )
+                                                                                                     AS
+
+SELECT   initcap(payload['event']['category'])                                                       AS category,
+         payload['event']['securityStatus']                                                          AS securitystatus,
+         payload['event']['currency']                                                                AS currency,
+         payload['event']['isin']                                                                    AS isin,
+         payload['streamInfo']['entityType']                                                         AS entitytype,
+         payload['transactionId']                                                                    AS transactionid,
+         payload['type']                                                                             AS type,
+         row_number() over(partition BY payload['event']['isin'] ORDER BY payload['timestamp'] DESC) AS rnk
+FROM     "EXT_ANALYTICS_ENGINEER_RAW". "INGESTED". "BROKER_MASTERDATA_DOMAINEVENTS"
+WHERE    securitystatus IS NOT NULL qualify rnk = 1

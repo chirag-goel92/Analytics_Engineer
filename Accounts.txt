@@ -1,0 +1,17 @@
+use schema "EXT_ANALYTICS_ENGINEER_CGOEL"."MYSCHEMA";
+create or replace table accounts(
+    country_residence string,
+    city string,
+    userid string,
+    firstName string,
+    lastName string,
+    gender string
+) as
+select
+PAYLOAD['event']['currentAddress']['country'] as country_residence,
+    PAYLOAD['event']['currentAddress']['city'] as city,
+    PAYLOAD['event']['userId']::string as userid,
+    PAYLOAD['event']['personalDetails']['firstName']::string as firstName,
+    PAYLOAD['event']['personalDetails']['lastName']::string as lastName,
+    PAYLOAD['event']['personalDetails']['gender']::string as gender
+from "EXT_ANALYTICS_ENGINEER_RAW"."INGESTED"."BROKER_ACCOUNTS_DOMAINEVENTS"

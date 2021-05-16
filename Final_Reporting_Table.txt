@@ -1,0 +1,52 @@
+USE SCHEMA "EXT_ANALYTICS_ENGINEER_CGOEL". "MYSCHEMA";
+CREATE OR REPLACE TABLE report_view
+                        (
+                                                orderid string,
+                                                securityid string,
+                                                ordertype string,
+                                                quantity           INTEGER,
+                                                cumulativequantity INTEGER,
+                                                userid string,
+                                                ordertimestamp timestamp,
+                                                orderstate string,
+                                                current_state_flag string,
+                                                category string,
+                                                securitystatus string,
+                                                currency string,
+                                                isin string,
+                                                entitytype string,
+                                                transactionid string,
+                                                type string,
+                                                country_residence string,
+                                                city string,
+                                                firstname string,
+                                                lastname string,
+                                                gender string
+                        )
+                        AS
+SELECT          a.orderid,
+                a.securityid,
+                a.ordertype,
+                a.quantity,
+                a.cumulativequantity,
+                a.userid,
+                a.ordertimestamp,
+                a.orderstate,
+                a.current_state_flag,
+                b.category,
+                b.securitystatus,
+                b.currency,
+                b.isin,
+                b.entitytype,
+                b.transactionid,
+                b.type,
+                c.country_residence,
+                c.city,
+                c.firstname,
+                c.lastname,
+                c.gender
+FROM            "EXT_ANALYTICS_ENGINEER_CGOEL". "MYSCHEMA". "ORDERS" a
+LEFT OUTER JOIN "EXT_ANALYTICS_ENGINEER_CGOEL". "MYSCHEMA". "MASTER" b
+ON              a.securityid = b.isin
+LEFT OUTER JOIN "EXT_ANALYTICS_ENGINEER_CGOEL". "MYSCHEMA". "ACCOUNTS" c
+ON              a.userid = c.userid
